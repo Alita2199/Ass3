@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Gallery with Pagination</title>
+  <style>
+    #imageContainer img {
+      max-width: 200px;
+      margin: 10px;
+    }
+    #pagination {
+      margin-top: 20px;
+    }
+    #pagination button {
+      margin: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Image Gallery with Pagination</h1>
+  
+  <div id="imageContainer"></div>
+  <div id="pagination">
+    <button id="prevBtn" onclick="prevPage()">Previous</button>
+    <span id="pageInfo"></span>
+    <button id="nextBtn" onclick="nextPage()">Next</button>
+  </div>
+
+  <script>
+    let currentPage = 1;
+    let totalPages = 1; // Initialize totalPages
+
+    function fetchPage(pageIndex) {
+      fetch(`/fetch/all/pages/${pageIndex}`)
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+
+          const imageContainer = document.getElementById('imageContainer');
+          imageContainer.innerHTML = ''; // Clear any existing content
+
+          if (Array.isArray(data.files) && data.files.length > 0) {
+            data.files.forEach((image) => {
+              if (image.imageBuffer) {
+                // Create an img element
+                const imgElement = document.createElement('img');
+                imgElement.src = `data:${image.contentType};base64,${image.imageBuffer}`;
+                imgElement.alt = image.filename;
+
+                // Append the img element to the container
+                imageContainer.appendChild(imgElement);
+              }
+            });
+          } else {
+            imageContainer.innerHTML = '<p>No images found.</p>';
+          }
+
+          // Update pagination info and buttons
+          currentPage = data.page;
+          totalPages = data.totalPages;
+
+          const pageInfo = document.getElementById('pageInfo');
+          pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+
+          // Enable/Disable pagination buttons
+          document.getElementById('prevBtn').disabled = currentPage <= 1;
+          document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+        })
+        .catch((error) => console.error("Error fetching page:", error));
+    }
+
+    function prevPage() {
+      if (currentPage > 1) {
+        fetchPage(currentPage - 1);
+      }
+    }
+
+    function nextPage() {
+      if (currentPage < totalPages) {
+        fetchPage(currentPage + 1);
+      }
+    }
+
+    // Initial page load
+    fetchPage(currentPage);
+  </script>
+</body>
+</html>
