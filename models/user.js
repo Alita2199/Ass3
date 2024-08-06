@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
 const userSchema = new Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  // Add more fields as needed
+ 
   createdUploads: [{ type: Schema.Types.ObjectId, ref: 'Upload' }] // Reference to uploaded items
 });
 

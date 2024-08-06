@@ -9,36 +9,26 @@
   <h1>Fetch Random File</h1>
   <button onclick="fetchRandomFile()">Fetch Random File</button>
   <div id="imageContainer"></div>
-  <div id="errorMessage" style="color: red; margin-top: 10px;"></div>
-
   <script>
-    // Assuming you store the token in localStorage after login
-    const token = localStorage.getItem('token');
-if (!token) {
-    window.location.href = '/login'; // Redirect to login if not authenticated
-}
-
-function fetchRandomFile() {
-    fetch("/fetch", {
-        method: "GET",
-        headers: {
-            "Authorization": `Bearer ${token}`
-        }
-    })
-    .then((response) => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then((data) => {
-        // Handle the data
-    })
-    .catch((error) => {
-        console.error("Error fetching file:", error);
-    });
-}
-
+    function fetchRandomFile() {
+      fetch("/fetch")
+        .then(response => response.json())
+        .then(data => {
+          const imageContainer = document.getElementById('imageContainer');
+          imageContainer.innerHTML = ''; // Clear any existing content
+          if (data && data.imageBuffer) {
+            const imgElement = document.createElement('img');
+            imgElement.src = `data:${data.contentType};base64,${data.imageBuffer}`;
+            imgElement.alt = data.filename;
+            imgElement.style.maxWidth = '500px';
+            imgElement.style.margin = '10px';
+            imageContainer.appendChild(imgElement);
+          } else {
+            imageContainer.innerHTML = '<p>No image found.</p>';
+          }
+        })
+        .catch(error => console.error("Error fetching file:", error));
+    }
   </script>
 </body>
 </html>

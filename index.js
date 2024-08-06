@@ -7,7 +7,8 @@ const bcrypt = require("bcryptjs");
 const multer = require("multer");  // Import multer here
 const User = require('./models/user'); // Import User model
 const Upload = require('./models/upload'); // Import Upload model
-const uploadRoutes = require("./router/upload_router");
+const uploadRouter = require("./router/upload_router");
+const fetchRouter = require("./router/fetch_router");
 const authenticateToken = require('./middleware/authenticateToken'); // Import authenticateToken middleware
 
 const app = express();
@@ -17,7 +18,8 @@ const PORT = process.env.PORT || 3000;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static("public"));
-
+app.use("/upload", uploadRouter);
+app.use("/fetch", fetchRouter);
 // Configure Multer to use memory storage and add file size limit and file type validation
 const storage = multer.memoryStorage();
 const upload = multer({
@@ -95,7 +97,8 @@ app.post('/login', async (req, res) => {
 
     console.log('Password matched, creating token');
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.json({ token });
+    console.log(token)
+    res.json({ token: token });
   } catch (error) {
     console.error('Error during login:', error);
     res.status(500).send('Error logging in');
@@ -125,24 +128,26 @@ app.get("/index", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "index.html"));
 });
 
+// Serve fetch-random.html
 app.get("/fetch-random", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "fetch-random.html"));
+  res.sendFile(path.join(__dirname, "views/fetch-random.html"));
 });
 
+// Serve fetch-multiple-random.html
 app.get("/fetch-multiple-random", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "fetch-multiple-random.html"));
+  res.sendFile(path.join(__dirname, "views/fetch-multiple-random.html"));
 });
 
+// Serve gallery.html
 app.get("/gallery", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "gallery.html"));
+  res.sendFile(path.join(__dirname, "views/gallery.html"));
 });
 
+// Serve gallery-pagination.html
 app.get("/gallery-pagination", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "gallery-pagination.html"));
+  res.sendFile(path.join(__dirname, "views/gallery-pagination.html"));
 });
 
-// Use the router
-app.use('/upload', uploadRoutes);
 
 app.get("/upload/single", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "upload.html"));
@@ -161,11 +166,7 @@ app.get("/upload/multiple", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "upload-multiple.html"));
 });
 
-// Fetch endpoint with user filtering
-app.get('/fetch', authenticateToken, async (req, res) => {
-  const uploads = await Upload.find({ createdBy: req.user.userId });
-  res.json(uploads);
-});
+
 
 // Handle 404 errors
 app.use((req, res) => {

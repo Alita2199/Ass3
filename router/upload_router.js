@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const Image = require("../models/file"); // Adjust the path if necessary
+const authenticateToken = require("../middleware/authenticateToken");
+
 
 // Configure Multer to use memory storage and add file size limit and file type validation
 const storage = multer.memoryStorage();
@@ -19,7 +21,7 @@ const upload = multer({
 });
 
 // Upload single file
-router.post("/single", upload.single("file"), (req, res) => {
+router.post("/single", authenticateToken, upload.single("file"), (req, res) => {
     if (!req.file) {
         return res.status(400).send("No file uploaded.");
     }
@@ -28,7 +30,7 @@ router.post("/single", upload.single("file"), (req, res) => {
         filename: req.file.originalname,
         contentType: req.file.mimetype,
         imageBuffer: req.file.buffer,
-        created_by: req.user ? req.user.userId : null,
+        created_by: req.user ? req.user.id : null,
     });
 
     newImage.save()

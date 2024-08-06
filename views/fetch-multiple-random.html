@@ -21,20 +21,16 @@
       fetch(`/fetch/multiple?count=${count}`)
         .then((response) => response.json())
         .then((data) => {
-          console.log(data);
           const imageContainer = document.getElementById('imageContainer');
           imageContainer.innerHTML = ''; // Clear any existing content
           if (Array.isArray(data) && data.length > 0) {
             data.forEach((image) => {
               if (image.imageBuffer) {
-                // Create an img element
                 const imgElement = document.createElement('img');
                 imgElement.src = `data:${image.contentType};base64,${image.imageBuffer}`;
                 imgElement.alt = image.filename;
                 imgElement.style.maxWidth = '200px';
                 imgElement.style.margin = '10px';
-
-                // Append the img element to the container
                 imageContainer.appendChild(imgElement);
               }
             });
